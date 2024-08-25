@@ -1,10 +1,59 @@
 import random
+from functools import total_ordering
+
+
+@total_ordering
+class Card:
+    SUITS = ["Clubs", "Diamonds", "Hearts", "Spades"]
+    RANKS = [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "Jack",
+        "Queen",
+        "King",
+        "Ace",
+    ]
+
+    def __init__(self, rank, suit):
+        self.rank = rank
+        self.suit = suit
+
+    def __eq__(self, other):
+        return (self.rank, self.suit) == (other.rank, other.suit)
+
+    def __lt__(self, other):
+        self_rank = self.RANKS.index(self.rank)
+        other_rank = other.RANKS.index(other.rank)
+        if self_rank != other_rank:
+            return self_rank < other_rank
+        return self.SUITS.index(self.suit) < other.SUITS.index(other.suit)
+
+    def __str__(self):
+        return f"{self.rank} of {self.suit}"
+
+
+class DeckOfCards:
+    def __init__(self):
+        self._cards = [Card(rank, suit) for suit in Card.SUITS for rank in Card.RANKS]
+        self.shuffle_deck()
+
+    def shuffle_deck(self):
+        random.shuffle(self._cards)
+
+    def deal_card(self):
+        return self._cards.pop(0) if self._cards else None
 
 
 class CardGame:
     def __init__(self):
         self.deck = DeckOfCards()
-        self.deck.shuffle_deck()
 
     def play(self):
         print("Nothing to play...")
@@ -22,12 +71,7 @@ class War(CardGame):
         self.__battle()
 
     def __deal_hand(self):
-        hand = []
-        for i in range(5):
-            card = self.deck.deal_card()
-            if card:
-                hand.append(card)
-        return hand
+        return [self.deck.deal_card() for _ in range(5)]
 
     def __battle(self):
         player1_pile = []
@@ -36,7 +80,7 @@ class War(CardGame):
         player2_score = 0
         ties = 0
 
-        while len(self.player1_hand) > 0 and len(self.player2_hand) > 0:
+        while self.player1_hand and self.player2_hand:
             card1 = self.player1_hand.pop()
             card2 = self.player2_hand.pop()
             print(f"{card1} vs {card2}")
@@ -62,65 +106,13 @@ class War(CardGame):
         print("==========================================")
 
 
-SUITS = ["Clubs", "Diamonds", "Hearts", "Spades"]
-
-RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"]
+### Example Usage
 
 
-def index_of(lst, item):
-    for i in range(len(lst)):
-        if lst[i] == item:
-            return i
-    return None
+def main():
+    war_game = War()
+    war_game.play()
 
 
-class Card:
-    def __init__(self, rank, suit):
-        self.rank = rank
-        self.suit = suit
-
-    def __cmp(self, other):
-        self_suit_i = index_of(SUITS, self.suit)
-        other_suit_i = index_of(SUITS, other.suit)
-        self_rank_i = index_of(RANKS, self.rank)
-        other_rank_i = index_of(RANKS, other.rank)
-        if self_rank_i > other_rank_i:
-            return "gt"
-        if self_rank_i < other_rank_i:
-            return "lt"
-        if self_suit_i > other_suit_i:
-            return "gt"
-        if self_suit_i < other_suit_i:
-            return "lt"
-        return "eq"
-
-    def __eq__(self, other):
-        return self.__cmp(other) == "eq"
-
-    def __gt__(self, other):
-        return self.__cmp(other) == "gt"
-
-    def __lt__(self, other):
-        return self.__cmp(other) == "lt"
-
-    def __str__(self):
-        return f"{self.rank} of {self.suit}"
-
-
-class DeckOfCards:
-    def __init__(self):
-        self.__cards = []
-        self.create_deck()
-
-    def create_deck(self):
-        for suit in SUITS:
-            for rank in RANKS:
-                self.__cards.append(Card(rank, suit))
-
-    def shuffle_deck(self):
-        random.shuffle(self.__cards)
-
-    def deal_card(self):
-        if len(self.__cards) == 0:
-            return None
-        return self.__cards.pop(0)
+if __name__ == "__main__":
+    main()
